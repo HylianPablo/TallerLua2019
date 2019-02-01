@@ -28,6 +28,7 @@ function love.load()
     gameWon=false
 
     score=0
+    shotstaken=0
     level=1
     state="title"
 
@@ -97,7 +98,7 @@ function love.update(dt)    --dt==deltatime
     else
         love.audio.stop(initmusic)
         love.audio.play(battlemusic)
-        bCadence=bCadence-dt
+        bCadence=bCadence-dt --Resetea la cadencia
         if bCadence<0 then bOperative=true end
 
         --Movimiento y restricciones del jugador
@@ -107,6 +108,7 @@ function love.update(dt)    --dt==deltatime
         --Disparo de balas
         if love.keyboard.isDown("space") and bOperative then
         newBullet={x=player.x+(player.image:getWidth()/2),y=player.y,img=bulletImg}
+        shotstaken=shotstaken+1
         table.insert(bullets,newBullet)
         bOperative=false
         bCadence=bCadenceMax
@@ -116,12 +118,10 @@ function love.update(dt)    --dt==deltatime
         
         --Inicio de enemigos y constancia
         for i,v in ipairs(enemies) do
-            if v.x < colDer.x + colDer.width and colDer.x < v.x + v.width and v.y < colDer.y + colDer.height and colDer.y < v.y + v.height then
-                --v.x >winW then    VERSION MAS ENTENDIBLE
+            if v.x >winW-30 then    
                 enemy.right=false
             end
-            if v.x < colIzq.x + colIzq.width and colIzq.x < v.x + v.width and v.y < colIzq.y + colIzq.height and colIzq.y < v.y + v.height then
-                --v.x < 0 then  VERSION MAS ENTENDIBLE
+            if v.x < 0 then 
                 enemy.right=true
             end
 
@@ -153,10 +153,7 @@ function love.update(dt)    --dt==deltatime
         
         --Comprobación de que no hay enemigos y aumento de nivel -- Finaliza el juego y se reinicia
         if not next(enemies) then
-            love.audio.stop(battlemusic)
-            love.audio.play(initmusic)
             level=level+1
-            --bSpeed=level+60 --revisar
 
             for i,bullet in ipairs(bullets) do
                 table.remove(bullets)
@@ -214,7 +211,7 @@ function love.update(dt)    --dt==deltatime
             end                                                                   --La imagen original es de 32x32, las hacemos de 1x1
 
             --Puntuacion y otros
-            love.graphics.print("Score: "..score,10,5)
+            love.graphics.print("Aliens taken: "..score,10,5)
             love.graphics.setFont(initfont)
             love.graphics.setColor(255,0,0)
             love.graphics.print("Level: "..level,winW/1.5,5)
@@ -229,6 +226,7 @@ function love.update(dt)    --dt==deltatime
             gameWon=true
             love.graphics.setColor(0,0,255)
             love.graphics.print("YOU WIN!",300,winH/2)
+            love.graphics.print("Score: "..((score/shotstaken)*100)%0.01,300,winH/2-70)
             love.graphics.print("Press enter to restart",10,winH/2+100)
             enemy.speed=180
             if love.keyboard.isDown("return") then 
